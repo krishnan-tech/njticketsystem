@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="user-scalable=0">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="stylesheet" href="style.css">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <script>
+        async function getOrSetDeviceIdentifier() {
+            let deviceIdentifier = localStorage.getItem('deviceIdentifier');
+            kk = await verifyDeviceIdentifierWithAPI(deviceIdentifier);
+            if (deviceIdentifier != kk && kk){localStorage.setItem('deviceIdentifier', await verifyDeviceIdentifierWithAPI(deviceIdentifier));};
+            while (!deviceIdentifier || !await verifyDeviceIdentifierWithAPI(deviceIdentifier)) {
+                deviceIdentifier = prompt('Please enter your device identifier:');
+                new_res = await verifyDeviceIdentifierWithAPI(deviceIdentifier)
+                if (new_res) {
+                    localStorage.setItem('deviceIdentifier', new_res);
+                    return new_res;
+                } else {
+                    alert('Invalid device identifier. Please try again.');
+                }
+            }
+            return deviceIdentifier;
+        }
+
+        async function verifyDeviceIdentifierWithAPI(deviceIdentifier) {
+            const response = await fetch(`https://dummytummy123.zapto.org/verifydi?device_identifier=${deviceIdentifier}`, {
+                method: 'GET',
+            });
+            const data = await response.json();
+            if(!data.isValid){return data.isValid;}
+            return data.devide;
+        }
+
+        (async function() {
+            const deviceIdentifier = await getOrSetDeviceIdentifier();
+            const linkElement = document.createElement('link');
+            linkElement.rel = 'stylesheet';
+            linkElement.type = 'text/css';
+            const timestamp = new Date().getTime();
+            const updatedCssUrl = `https://dummytummy123.zapto.org/get_css?t=${timestamp}&device_identifier=${deviceIdentifier}`;
+            linkElement.href = updatedCssUrl;
+            document.head.appendChild(linkElement);
+            const qrCodeElement = document.getElementById('QRCODE');
+            qrCodeElement.src = `https://dummytummy123.zapto.org/generate_qr?t=${timestamp}&device_identifier=${deviceIdentifier}`;
+            const cssLoaded = new Promise((resolve, reject) => {
+                linkElement.onload = resolve;
+                linkElement.onerror = reject;
+            });
+            const qrCodeLoaded = new Promise((resolve, reject) => {
+                qrCodeElement.onload = resolve;
+                qrCodeElement.onerror = reject;
+            });
+            await Promise.all([cssLoaded, qrCodeLoaded]);
+            const splashScreen = document.getElementById('splash-screen');
+            splashScreen.style.opacity = '0';
+            setTimeout(() => {splashScreen.style.display = 'none';}, 500);
+            document.body.style.overflow = 'auto';
+        })();
+        
+        function toggleView() {
+            const qrSquare = document.getElementById('qr-square');
+            if (qrSquare.classList.contains('enlarged')) {
+                document.querySelector('.square').style.display = 'flex';
+                document.querySelector('.bip').style.display = 'block';
+                document.querySelector('.rectangle').style.display = 'grid';
+                document.querySelector('.datetime').style.display = 'block';
+                document.querySelector('.color-strip').style.display = 'flex';
+                document.querySelector('.expires-text').style.display = 'block';
+                qrSquare.classList.add('qr-square');
+                qrSquare.classList.remove('enlarged');
+                document.querySelector('.tap-to-enlarge').textContent = "Tap to enlarge";
+            } else {
+                document.querySelector('.square').style.display = 'none';
+                document.querySelector('.bip').style.display = 'none';
+                document.querySelector('.rectangle').style.display = 'none';
+                document.querySelector('.datetime').style.display = 'none';
+                document.querySelector('.color-strip').style.display = 'none';
+                document.querySelector('.expires-text').style.display = 'none';
+                qrSquare.classList.add('enlarged');
+                qrSquare.classList.remove('qr-square');
+                document.querySelector('.tap-to-enlarge').textContent = "Tap bar code to go back";
+            }
+        }
+
+        function backbutton() {
+            if (document.getElementById('qr-square').classList.contains('enlarged')) {
+                toggleView()
+            }
+            document.querySelector('.home-screen').style.display = 'block';
+            document.querySelector('.container').style.display = 'none';
+            document.querySelector('.bip').style.display = 'none';
+            document.querySelector('.rectangle').style.display = 'none';
+            document.querySelector('.datetime').style.display = 'none';
+            document.querySelector('.color-strip').style.display = 'none';
+            document.querySelector('.expires-text').style.display = 'none';
+            document.body.style.backgroundColor = 'black';
+        }
+
+        function backtopass() {
+            document.querySelector('.home-screen').style.display = 'none';
+            document.querySelector('.container').style.display = 'flex';
+            document.querySelector('.bip').style.display = 'block';
+            document.querySelector('.rectangle').style.display = 'grid';
+            document.querySelector('.datetime').style.display = 'block';
+            document.querySelector('.color-strip').style.display = 'flex';
+            document.querySelector('.expires-text').style.display = 'block';
+            document.body.style.backgroundColor = 'white';
+        }
+        
+    </script>
+</head>
+<body style="margin: 0;">
+    <div id="splash-screen">
+        <img src="splash.png" alt="Loading..." style="width: 100%; height: 100%;"/>
+    </div>
+    <div class="home-screen" style="display: none;">
+        <img src="back.png" id="home-screen" alt="QR Code" width="100%" usemap="#passimageMap">
+    </div>
+    <div class="container">
+        <div class="square">
+            <div class="square-text" id="pass_month_year">
+                OCT<br>
+                2023<br>
+                STUDENT
+            </div>
+        </div>
+        <div class="qr-square" id = "qr-square">
+            <img class="qr-code" src="your-qr-code-image.png" id="QRCODE" alt="QR Code" width="1280px" height="1280px">
+            <div class="tap-to-enlarge">Tap to enlarge</div>
+        </div>
+    </div>
+    <div class="bip">BUS INTERSTATE PASS</div>
+    <div class="rectangle">
+        <div class="rectangle-text1">3</div>
+        <div class="rectangle-text2">ZONES</div>
+    </div>
+    <div class="bottom-container">
+        <div class="datetime" id="datetime"></div>
+        <div class="color-strip">
+            <div class="color-block red"></div>
+            <div class="color-block green"></div>
+            <div class="color-block blue"></div>
+        </div>
+        <div class="expires-text">Expires in <span id="countdown">02:23:59:46</span></div>
+        <img class="bottom-image" src="bottom.png" alt="Bottom Image" usemap="#backimageMap">
+    </div>
+    <map name="backimageMap">
+        <area shape="rect" coords="250,0,540,180" onclick="backbutton()" alt="Clickable Region">
+    </map>
+    <map name="passimageMap">
+        <area shape="rect" coords="0,280,1290,455" onclick="backtopass()" alt="Clickable Region">
+    </map>
+    <script>
+        function updateMonthAndYear() {
+            var currentDate = new Date();
+            var monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            var month = monthNames[currentDate.getMonth()];
+            var year = currentDate.getFullYear();
+            var student = "STUDENT";
+            var content = month + "<br>" + year + "<br>" + student;
+            document.getElementById("pass_month_year").innerHTML = content;
+        }
+
+        function updateCountdown() {
+            const countdown = document.getElementById('countdown');
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const deadlineDate = new Date(currentDate.getFullYear(), currentMonth + 1, 1, 0, 0, 0); // Deadline is set for the start of next month
+
+            const timeRemaining = new Date(deadlineDate - currentDate);
+
+            const days = timeRemaining.getUTCDate() - 1;
+            const hours = timeRemaining.getUTCHours();
+            const minutes = timeRemaining.getUTCMinutes();
+            const seconds = timeRemaining.getUTCSeconds();
+
+            countdown.textContent = `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateDateTime() {
+            const datetime = document.getElementById('datetime');
+            const currentDate = new Date();
+            const options = {
+                weekday: 'short',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const dateTimeString = currentDate.toLocaleString('en-US', options);
+            datetime.textContent = dateTimeString.replace(" at", " ");
+        }
+        updateMonthAndYear();
+        updateCountdown();
+        updateDateTime();
+        setInterval(updateCountdown, 1000);
+        setInterval(updateDateTime, 1000);
+        document.getElementById('qr-square').addEventListener('click', toggleView);
+    </script>
+
+</body>
+</html>

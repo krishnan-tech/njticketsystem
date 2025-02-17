@@ -1,0 +1,5 @@
+image.jpg
+config.py
+*.pyc
+__pycache__/
+qr.jpg
